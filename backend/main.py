@@ -129,6 +129,80 @@ Reasoning:""",
             )
         ]
     ),
+    UseCase(
+        id="ITAX", 
+        name="(ITAX) Indian Personal Tax Assistant", 
+        description="Evaluates understanding of Indian Income Tax laws, regulations, and personal tax queries for FY 2024-25.", 
+        dataset_count=100,
+        dataset_source="hf:msinankhan1/India_Tax_FAQs:default",
+        prompts=[
+            PromptConfig(
+                id="p3", 
+                name="Tax Expert Prompt (Default)", 
+                cot_content="""You are an expert Indian Income Tax consultant with deep knowledge of:
+- Income Tax Act, 1961
+- Finance Act 2024-25
+- Tax slabs, deductions (80C, 80D, HRA, etc.)
+- Form 16, ITR filing procedures
+- TDS, advance tax, and e-verification
+
+When answering tax queries:
+1. Clarify the Question: Identify the tax year, income sources, and specific regulations involved.
+2. Apply Tax Rules: Reference relevant sections (e.g., Section 80C for deductions up to ₹1,50,000).
+3. Calculate Step-by-Step: If amounts are involved, show calculations clearly.
+4. Provide Context: Mention deadlines, forms required, or compliance steps.
+5. Final Answer: Give a clear, actionable response.
+
+Always prioritize accuracy and cite the Finance Act year when applicable.""", 
+                few_shot_content="""Q: I invested ₹1,20,000 in PPF and ₹30,000 in ELSS. What is my total 80C deduction?
+Reasoning:
+1. Section 80C allows deductions up to ₹1,50,000 per financial year.
+2. PPF contribution: ₹1,20,000
+3. ELSS investment: ₹30,000
+4. Total invested: ₹1,20,000 + ₹30,000 = ₹1,50,000
+5. This is within the ₹1,50,000 limit.
+Answer: Your total Section 80C deduction is ₹1,50,000 for FY 2024-25.
+
+Q: My gross salary is ₹8,00,000. I have standard deduction. What is my taxable income?
+Reasoning:
+1. Gross Salary: ₹8,00,000
+2. Standard Deduction (FY 2024-25): ₹50,000
+3. Taxable Income = Gross Salary - Standard Deduction
+4. ₹8,00,000 - ₹50,000 = ₹7,50,000
+Answer: Your taxable income is ₹7,50,000 (before other deductions like 80C, 80D).
+
+Q: What is the last date to file ITR for FY 2024-25?
+Reasoning:
+1. For salaried individuals (not requiring audit), the ITR filing deadline is typically July 31st.
+2. For FY 2024-25 (AY 2025-26), the deadline is July 31, 2025.
+3. Late filing attracts penalties under Section 234F.
+Answer: July 31, 2025 is the last date to file ITR for FY 2024-25 (Assessment Year 2025-26) for salaried taxpayers.""",
+                user_prompt_template="""Tax Query: {{question}}
+
+Provide a detailed answer with calculations if applicable:""",
+                is_default=True
+            ),
+            PromptConfig(
+                id="p3_simple", 
+                name="Simple Tax Advisor Prompt", 
+                cot_content="""You are a helpful tax advisor for Indian taxpayers. Answer questions about:
+- Income tax calculations
+- Deductions and exemptions
+- Form 16 and ITR filing
+- TDS and tax payments
+
+Keep answers clear, concise, and practical.""", 
+                few_shot_content="""Q: How much can I save under 80C?
+A: You can claim deductions up to ₹1,50,000 under Section 80C by investing in PPF, ELSS, EPF, life insurance, etc.
+
+Q: What is standard deduction for FY 2024-25?
+A: Standard deduction is ₹50,000 for salaried employees under the new tax regime.""",
+                user_prompt_template="""Question: {{question}}
+Answer:""",
+                is_default=False
+            )
+        ]
+    ),
 ]
 
 def format_prompt(prompt_config: PromptConfig, sample: dict) -> str:
