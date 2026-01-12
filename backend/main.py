@@ -129,6 +129,91 @@ Reasoning:""",
             )
         ]
     ),
+    UseCase(
+        id="ITAX", 
+        name="(ITAX) Indian Personal Tax Assistant", 
+        description="Evaluates ability to extract financial data from tax documents and calculate net income, deductions, and tax liability for FY 2024-25.", 
+        dataset_count=100,
+        dataset_source="hf:AgamiAI/Indian-Income-Tax-Returns:default",
+        prompts=[
+            PromptConfig(
+                id="p3", 
+                name="Tax Document Analyzer (Default)", 
+                cot_content="""You are an expert Indian Income Tax document analyzer specialized in:
+- Extracting financial data from Form 16, payslips, and ITR forms
+- Calculating gross income, deductions, taxable income, and tax liability
+- Understanding Income Tax Act 1961 and Finance Act 2024-25
+- Computing tax under old vs new regime
+- Applying deductions: 80C (₹1.5L), 80D (₹25K/₹50K), HRA, Standard Deduction (₹50K)
+
+When analyzing tax documents:
+1. Extract Key Data: Identify gross salary, allowances, deductions, TDS, etc.
+2. Categorize Income: Separate salary, house property, capital gains, other sources.
+3. Calculate Deductions: Apply Section 80C, 80D, standard deduction, etc.
+4. Compute Taxable Income: Gross income minus all eligible deductions.
+5. Calculate Tax Liability: Apply FY 2024-25 tax slabs (old/new regime).
+6. Final Answer: Provide net income, total tax, or requested calculation.
+
+Always show step-by-step calculations with amounts in INR.""", 
+                few_shot_content="""Example 1: Extract net income from Form 16
+Input: Gross Salary: ₹15,00,000 | Standard Deduction: ₹50,000 | 80C: ₹1,50,000 | Professional Tax: ₹2,400
+Calculation:
+1. Gross Salary = ₹15,00,000
+2. Less: Standard Deduction = ₹50,000
+3. Less: Professional Tax = ₹2,400
+4. Gross Total Income = ₹14,47,600
+5. Less: 80C Deduction = ₹1,50,000
+6. Net Taxable Income = ₹12,97,600
+Answer: Net taxable income for FY 2024-25 is ₹12,97,600
+
+Example 2: Calculate total deductions
+Input: PPF: ₹1,00,000 | ELSS: ₹50,000 | LIC: ₹30,000 | Health Insurance: ₹25,000
+Calculation:
+1. 80C Investments = ₹1,00,000 (PPF) + ₹50,000 (ELSS) + ₹30,000 (LIC) = ₹1,80,000
+2. 80C limit = ₹1,50,000 (capped)
+3. 80D (Health Insurance) = ₹25,000 (within ₹25,000 limit for under 60)
+4. Total Deductions = ₹1,50,000 + ₹25,000 = ₹1,75,000
+Answer: Total eligible deductions = ₹1,75,000 (80C: ₹1,50,000 + 80D: ₹25,000)
+
+Example 3: What is my net income for FY 25?
+Input: Annual Salary: ₹12,00,000 | HRA Received: ₹3,60,000 | Rent Paid: ₹30,000/month | 80C: ₹1,50,000
+Calculation:
+1. Gross Salary = ₹12,00,000
+2. HRA Exemption = Min(Actual: ₹3,60,000, 50% salary: ₹6,00,000, Rent-10%: ₹2,40,000) = ₹2,40,000
+3. Taxable Salary = ₹12,00,000 - ₹2,40,000 = ₹9,60,000
+4. Less: Standard Deduction = ₹50,000
+5. Gross Total Income = ₹9,10,000
+6. Less: 80C = ₹1,50,000
+7. Net Taxable Income = ₹7,60,000
+Answer: Your net taxable income for FY 2024-25 is ₹7,60,000""",
+                user_prompt_template="""Tax Document Data:
+{{text}}
+
+Extract and calculate the requested information with step-by-step reasoning:""",
+                is_default=True
+            ),
+            PromptConfig(
+                id="p3_simple", 
+                name="Quick Tax Calculator", 
+                cot_content="""You are a quick tax calculator for Indian taxpayers. Extract numbers from documents and compute:
+- Net taxable income
+- Total deductions (80C, 80D, standard deduction)
+- Tax liability under FY 2024-25 slabs
+
+Show calculations briefly and clearly.""", 
+                few_shot_content="""Input: Salary ₹10L, 80C ₹1.5L
+Calculation: ₹10,00,000 - ₹50,000 (std) - ₹1,50,000 (80C) = ₹8,00,000
+Output: Net taxable income = ₹8,00,000
+
+Input: Gross ₹15L, HRA ₹4L, Rent ₹25K/month, 80C ₹1L
+Calculation: HRA exempt = ₹2L, Taxable = ₹15L - ₹2L - ₹50K - ₹1L = ₹11,50,000
+Output: Net taxable income = ₹11,50,000""",
+                user_prompt_template="""Input: {{text}}
+Calculate:""",
+                is_default=False
+            )
+        ]
+    ),
 ]
 
 def format_prompt(prompt_config: PromptConfig, sample: dict) -> str:
